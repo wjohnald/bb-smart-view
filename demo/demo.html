@@ -34,6 +34,8 @@
           <p>SmartView is able to read html fragments specfied by a selector and create models out of them. This is a naive process where the view, on initialize, will read all tags with a data attribute. The attribute will be of the following format:</p>
           <pre>data-attr=key value</pre>
           <p>This example will add { key: "value" } to the SmartView's model. When the SmartView is finished divining the model, a "ready" event will be posted with the model as an argument. The view will additionally be bound to the Model's change event.</p>
+
+          <p>By default we compile SmartView templates using underscore templates and traditional underscore ERB-style delimiters. You may override these delimiters in the options.<p>
         </div>
       </div>
     </div>

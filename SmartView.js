@@ -6,6 +6,18 @@ var SmartView = Backbone.View.extend({
 
     selector: null,
 
+    templateDelimeters: {
+        unescaped: {
+            open: "<%=",
+            close: "%>"
+        },
+
+        escaped: {
+            open: "<%-",
+            close: "%>"
+        }
+    },
+
     initialize: function(options) {
         this._parseOptions(options);
 
@@ -34,8 +46,13 @@ var SmartView = Backbone.View.extend({
     _createTemplate: function() {
         var $fragment = this.$el.clone();
 
+        var self = this;
         $fragment.find('[data-attr]').each(function() {
-            $(this).text('<%= ' + $(this).data('attr') + ' %>');
+            if ($(this.data('escaped'))) {
+                $(this).text(self.templateDelimeters.escaped.open + " " + $(this).data('attr') + " " + self.templateDelimeters.escaped.close);
+            } else {
+                $(this).text(self.templateDelimeters.unescaped.open + " " + $(this).data('attr') + " " + self.templateDelimeters.unescaped.close);
+            }
         });
 
         this.template = _.template($fragment.html().replace(/\&lt\;\%/g, "<%").replace(/\%\&gt\;/g, "%>"));
@@ -56,6 +73,10 @@ var SmartView = Backbone.View.extend({
 
         if (options.modelClass) {
             this.modelClass = options.modelClass;
+        }
+
+        if (options.templateDelimeters) {
+            this.templateDelimeters = options.templateDelimeters;
         }
     },
 
