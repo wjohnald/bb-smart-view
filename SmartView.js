@@ -6,6 +6,8 @@ var SmartView = Backbone.View.extend({
 
     selector: null,
 
+    _readyContinuations: null,
+
     templateDelimeters: {
         unescaped: {
             open: "<%=",
@@ -34,6 +36,22 @@ var SmartView = Backbone.View.extend({
         return this;
     },
 
+    ready: function(fn) {
+        if (this._hasModel) {
+
+            fn(this.model);
+
+        } else {
+
+            if (!this._readyContinuations) {
+                this._readyContinuations = [];
+            }
+
+            this._readyContinuations.push(fn);
+
+        }
+    },
+
     _parseFragment: function() {
         var attrs = {};
         this.$("[data-attr]").each(function() {
@@ -48,7 +66,7 @@ var SmartView = Backbone.View.extend({
 
         var self = this;
         $fragment.find('[data-attr]').each(function() {
-            if ($(this.data('escaped'))) {
+            if ($(this).data('escaped')) {
                 $(this).text(self.templateDelimeters.escaped.open + " " + $(this).data('attr') + " " + self.templateDelimeters.escaped.close);
             } else {
                 $(this).text(self.templateDelimeters.unescaped.open + " " + $(this).data('attr') + " " + self.templateDelimeters.unescaped.close);
@@ -63,7 +81,10 @@ var SmartView = Backbone.View.extend({
 
         this._bindEvents();
 
-        this.trigger("ready", this.model);
+        this._addToCollection();
+
+        this._hasModel = true;
+        this._flushReady();
     },
 
     _parseOptions: function(options) {
@@ -84,6 +105,20 @@ var SmartView = Backbone.View.extend({
         if (this.model) {
             this.model.on("change", function() {
                 this.render();
+            }, this);
+        }
+    },
+
+    _addToCollection: function() {
+        if (this.model && this.collection) {
+            this.collection.add(this.model);
+        }
+    },
+
+    _flushReady: function() {
+        if (this._readyContinuations) {
+            _.each(this._readyContinuations, function(fb) {
+                fn(this.model);
             }, this);
         }
     }
